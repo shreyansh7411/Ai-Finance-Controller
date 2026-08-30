@@ -1,0 +1,41 @@
+﻿# Environment secrets — never commit
+.env
+
+# Maven
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+!backend/.mvn/wrapper/maven-wrapper.properties
+
+# Node / npm
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# AI development documentation
+AGENT_RULES.md
+PROJECT_STATUS.md
+CHANGELOG.md
+agent_prompts/
+phases/
+docs/
+setup_project.py
+write_pom.py
+
