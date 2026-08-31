@@ -14,4 +14,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     boolean existsByPaymentId(String paymentId);
 
     List<Payment> findByOrderId(String orderId);
+
+    List<Payment> findByBatchId(String batchId);
 }

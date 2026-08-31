@@ -23,7 +23,6 @@ public class SyntheticDataController {
             @Valid @RequestBody SyntheticGenerationRequest request) {
 
         return ResponseEntity.ok(
-                generatorService.generate(request.getCount())
-        );
+                generatorService.generate(request.getCount()));
     }
 }

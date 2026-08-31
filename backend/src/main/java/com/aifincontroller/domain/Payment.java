@@ -21,6 +21,9 @@ public class Payment {
     @Column(name = "payment_id", unique = true, nullable = false, length = 100)
     private String paymentId;
 
+    @Column(name = "batch_id", length = 100)
+    private String batchId;
+
     @Column(name = "order_id", nullable = false, length = 100)
     private String orderId;
 
@@ -60,6 +63,14 @@ public class Payment {
 
     public void setPaymentId(String paymentId) {
         this.paymentId = paymentId;
+    }
+
+    public String getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(String batchId) {
+        this.batchId = batchId;
     }
 
     public String getOrderId() {
