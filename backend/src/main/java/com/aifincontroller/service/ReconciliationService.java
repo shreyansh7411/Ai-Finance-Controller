@@ -13,6 +13,8 @@ import com.aifincontroller.repository.ReconciliationResultRepository;
 import com.aifincontroller.repository.RefundRepository;
 import com.aifincontroller.repository.SettlementRepository;
 import java.math.BigDecimal;
+import com.aifincontroller.domain.ReconciliationException;
+import com.aifincontroller.repository.ReconciliationExceptionRepository;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
@@ -22,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ReconciliationService {
+
+
 
     private static final BigDecimal ZERO =
             BigDecimal.ZERO.setScale(4, RoundingMode.HALF_UP);
@@ -47,12 +51,14 @@ public class ReconciliationService {
 
     private final MerchantOrderRepository merchantOrderRepository;
     private final PaymentRepository paymentRepository;
+    private final ReconciliationExceptionRepository reconciliationExceptionRepository;
     private final SettlementRepository settlementRepository;
     private final RefundRepository refundRepository;
     private final AdjustmentRepository adjustmentRepository;
     private final ReconciliationResultRepository reconciliationResultRepository;
 
     public ReconciliationService(
+            ReconciliationExceptionRepository reconciliationExceptionRepository,
             MerchantOrderRepository merchantOrderRepository,
             PaymentRepository paymentRepository,
             SettlementRepository settlementRepository,
@@ -66,6 +72,7 @@ public class ReconciliationService {
         this.refundRepository = refundRepository;
         this.adjustmentRepository = adjustmentRepository;
         this.reconciliationResultRepository = reconciliationResultRepository;
+        this.reconciliationExceptionRepository = reconciliationExceptionRepository;
     }
 
     @Transactional
@@ -335,38 +342,117 @@ public class ReconciliationService {
     }
 
     private ReconciliationResult saveResult(
-            String batchId,
-            Payment payment,
-            String matchType,
-            String status,
-            BigDecimal confidence,
-            BigDecimal expectedAmount,
-            BigDecimal actualAmount,
-            BigDecimal difference,
-            String matchedRecord) {
+                    String batchId,
+                    Payment payment,
+                    String matchType,
+                    String status,
+                    BigDecimal confidence,
+                    BigDecimal expectedAmount,
+                    BigDecimal actualAmount,
+                    BigDecimal difference,
+                    String matchedRecord) {
 
-        ReconciliationResult result =
-                new ReconciliationResult();
+            ReconciliationResult result = new ReconciliationResult();
 
-        result.setBatchId(batchId);
-        result.setPaymentReference(payment.getPaymentId());
-        result.setMatchedRecord(matchedRecord);
-        result.setMatchType(matchType);
-        result.setExpectedAmount(
-                scale(expectedAmount)
-        );
-        result.setActualAmount(
-                scale(actualAmount)
-        );
-        result.setDifference(
-                scale(difference)
-        );
-        result.setStatus(status);
-        result.setConfidenceScore(
-                scale(confidence)
-        );
+            result.setBatchId(batchId);
+            result.setPaymentReference(payment.getPaymentId());
+            result.setMatchedRecord(matchedRecord);
+            result.setMatchType(matchType);
+            result.setExpectedAmount(scale(expectedAmount));
+            result.setActualAmount(scale(actualAmount));
+            result.setDifference(scale(difference));
+            result.setStatus(status);
+            result.setConfidenceScore(scale(confidence));
 
-        return reconciliationResultRepository.save(result);
+            ReconciliationResult saved = reconciliationResultRepository.save(result);
+
+            /*
+             * Every EXCEPTION reconciliation result gets a corresponding
+             * reconciliation_exceptions record.
+             */
+            if ("EXCEPTION".equalsIgnoreCase(status)) {
+
+                    ReconciliationException exception = new ReconciliationException();
+
+                    exception.setReconciliationResultId(saved.getId());
+                    exception.setType(matchType);
+                    exception.setSeverity(
+                                    determineSeverity(matchType, confidence));
+                    exception.setStatus("OPEN");
+                    exception.setEvidenceSummary(
+                                    buildEvidenceSummary(
+                                                    matchType,
+                                                    expectedAmount,
+                                                    actualAmount,
+                                                    difference,
+                                                    matchedRecord));
+                    exception.setAiConfidence(scale(confidence));
+
+                    reconciliationExceptionRepository.save(exception);
+            }
+
+            return saved;
+    }
+
+    private String determineSeverity(
+                    String matchType,
+                    BigDecimal confidence) {
+
+            if ("MISSING_SETTLEMENT".equalsIgnoreCase(matchType)) {
+                    return "HIGH";
+            }
+
+            if ("ADJUSTMENT".equalsIgnoreCase(matchType) ||
+                            "REFUND".equalsIgnoreCase(matchType) ||
+                            "TIMING_DIFFERENCE".equalsIgnoreCase(matchType)) {
+                    return "MEDIUM";
+            }
+
+            if ("DUPLICATE".equalsIgnoreCase(matchType)) {
+                    return "HIGH";
+            }
+
+            if ("UNEXPLAINED_MISMATCH".equalsIgnoreCase(matchType)) {
+                    return "HIGH";
+            }
+
+            return confidence.compareTo(new BigDecimal("0.90")) >= 0
+                            ? "MEDIUM"
+                            : "LOW";
+    }
+
+    private String buildEvidenceSummary(
+                    String matchType,
+                    BigDecimal expectedAmount,
+                    BigDecimal actualAmount,
+                    BigDecimal difference,
+                    String matchedRecord) {
+
+            StringBuilder summary = new StringBuilder();
+
+            summary.append("Reconciliation classified as ")
+                            .append(matchType)
+                            .append(". ");
+
+            summary.append("Expected amount: ")
+                            .append(scale(expectedAmount))
+                            .append(". ");
+
+            summary.append("Actual amount: ")
+                            .append(scale(actualAmount))
+                            .append(". ");
+
+            summary.append("Difference: ")
+                            .append(scale(difference))
+                            .append(". ");
+
+            if (matchedRecord != null) {
+                    summary.append("Matched record: ")
+                                    .append(matchedRecord)
+                                    .append(". ");
+            }
+
+            return summary.toString().trim();
     }
 
     private boolean isTimingDifference(

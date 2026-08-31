@@ -214,7 +214,7 @@ class FinancialEntityPersistenceTest {
 
         assertThat(resultRepository.findByBatchId("batch_" + suffix)).hasSize(1);
         assertThat(exceptionRepository.findByReconciliationResultId(result.getId())).hasSize(1);
-        assertThat(auditLogRepository.findByEntityTypeAndEntityIdOrderByCreatedAtAsc("PAYMENT", paymentId))
+        assertThat(auditLogRepository.findByEntityTypeAndEntityId("PAYMENT", paymentId))
                 .hasSize(1);
     }
 

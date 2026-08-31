@@ -6,9 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ReconciliationExceptionRepository extends JpaRepository<ReconciliationException, Long> {
+public interface ReconciliationExceptionRepository
+        extends JpaRepository<ReconciliationException, Long> {
 
-    List<ReconciliationException> findByReconciliationResultId(Long reconciliationResultId);
-
-    List<ReconciliationException> findByStatus(String status);
+    List<ReconciliationException> findByReconciliationResultId(
+            Long reconciliationResultId);
 }
