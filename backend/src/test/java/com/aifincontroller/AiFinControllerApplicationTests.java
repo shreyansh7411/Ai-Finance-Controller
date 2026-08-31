@@ -6,7 +6,7 @@ import org.springframework.test.context.TestPropertySource;
 
 /**
  * Verifies the Spring application context starts successfully.
- * Requires a running PostgreSQL instance at localhost:5432/aifincontroller.
+ * Requires a running PostgreSQL instance at localhost:5432/ai-fin-controller.
  */
 @SpringBootTest
 @TestPropertySource(properties = {
