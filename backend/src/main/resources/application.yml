@@ -42,3 +42,10 @@ logging:
   level:
     com.aifincontroller: INFO
     org.springframework.web: WARN
+
+razorpay:
+  enabled: ${RAZORPAY_ENABLED:false}
+  base-url: ${RAZORPAY_BASE_URL:https://api.razorpay.com/v1}
+  key-id: ${RAZORPAY_KEY_ID:}
+  key-secret: ${RAZORPAY_KEY_SECRET:}
+
