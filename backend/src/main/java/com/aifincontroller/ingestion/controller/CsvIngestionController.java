@@ -1,5 +1,6 @@
 package com.aifincontroller.ingestion.controller;
 
+import com.aifincontroller.ingestion.dto.IngestionResult;
 import com.aifincontroller.ingestion.service.CsvIngestionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,43 +17,35 @@ public class CsvIngestionController {
     }
 
     @PostMapping("/payments")
-    public ResponseEntity<String> payments(
+    public ResponseEntity<IngestionResult> payments(
             @RequestParam("file") MultipartFile file,
             @RequestParam String batchId) {
 
-        int imported = ingestionService.ingestPayments(file, batchId);
-
         return ResponseEntity.ok(
-                "Payments imported: " + imported);
+                ingestionService.ingestPayments(file, batchId));
     }
 
     @PostMapping("/settlements")
-    public ResponseEntity<String> settlements(
+    public ResponseEntity<IngestionResult> settlements(
             @RequestParam("file") MultipartFile file) {
 
-        int imported = ingestionService.ingestSettlements(file);
-
         return ResponseEntity.ok(
-                "Settlements imported: " + imported);
+                ingestionService.ingestSettlements(file));
     }
 
     @PostMapping("/refunds")
-    public ResponseEntity<String> refunds(
+    public ResponseEntity<IngestionResult> refunds(
             @RequestParam("file") MultipartFile file) {
 
-        int imported = ingestionService.ingestRefunds(file);
-
         return ResponseEntity.ok(
-                "Refunds imported: " + imported);
+                ingestionService.ingestRefunds(file));
     }
 
     @PostMapping("/adjustments")
-    public ResponseEntity<String> adjustments(
+    public ResponseEntity<IngestionResult> adjustments(
             @RequestParam("file") MultipartFile file) {
 
-        int imported = ingestionService.ingestAdjustments(file);
-
         return ResponseEntity.ok(
-                "Adjustments imported: " + imported);
+                ingestionService.ingestAdjustments(file));
     }
 }
