@@ -5,6 +5,8 @@ import com.aifincontroller.ingestion.domain.IngestionBatchStatus;
 import com.aifincontroller.ingestion.repository.IngestionBatchRepository;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +37,16 @@ public class IngestionBatchService {
         batch.setStartedAt(Instant.now());
 
         return batchRepository.save(batch);
+    }
+
+    @Transactional(readOnly = true)
+    public List<IngestionBatch> getAllBatches() {
+        return batchRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<IngestionBatch> getBatch(String batchId) {
+        return batchRepository.findByBatchId(batchId);
     }
 
     @Transactional
