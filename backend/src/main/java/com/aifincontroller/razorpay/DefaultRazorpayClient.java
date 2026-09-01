@@ -21,7 +21,9 @@ public class DefaultRazorpayClient implements RazorpayClient {
 
         this.webClient = webClientBuilder
                 .baseUrl(properties.getBaseUrl())
-                .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader(
+                        HttpHeaders.ACCEPT,
+                        MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
 
@@ -31,7 +33,10 @@ public class DefaultRazorpayClient implements RazorpayClient {
     }
 
     @Override
-    public Map<String, Object> getPayments(int count, int skip) {
+    public Map<String, Object> getPayments(
+            int count,
+            int skip) {
+
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/payments")
@@ -63,12 +68,17 @@ public class DefaultRazorpayClient implements RazorpayClient {
     }
 
     @Override
-    public Map<String, Object> getSettlement(String settlementId) {
+    public Map<String, Object> getSettlement(
+            String settlementId) {
+
         return get("/settlements/" + settlementId);
     }
 
     @Override
-    public Map<String, Object> getSettlements(int count, int skip) {
+    public Map<String, Object> getSettlements(
+            int count,
+            int skip) {
+
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/settlements")
@@ -110,7 +120,32 @@ public class DefaultRazorpayClient implements RazorpayClient {
                 .block();
     }
 
+    @Override
+    public Map<String, Object> getRefund(
+            String refundId) {
+
+        return get("/refunds/" + refundId);
+    }
+
+    @Override
+    public Map<String, Object> getRefunds(
+            int count,
+            int skip) {
+
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/refunds")
+                        .queryParam("count", count)
+                        .queryParam("skip", skip)
+                        .build())
+                .headers(this::applyAuthentication)
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+    }
+
     private Map<String, Object> get(String path) {
+
         return webClient.get()
                 .uri(path)
                 .headers(this::applyAuthentication)
@@ -119,14 +154,20 @@ public class DefaultRazorpayClient implements RazorpayClient {
                 .block();
     }
 
-    private void applyAuthentication(HttpHeaders headers) {
+    private void applyAuthentication(
+            HttpHeaders headers) {
+
         if (!properties.isEnabled()) {
             throw new IllegalStateException(
-                    "Razorpay integration is disabled. Set RAZORPAY_ENABLED=true to enable it.");
+                    "Razorpay integration is disabled. "
+                            + "Set RAZORPAY_ENABLED=true to enable it.");
         }
 
-        if (properties.getKeyId() == null || properties.getKeyId().isBlank()
-                || properties.getKeySecret() == null || properties.getKeySecret().isBlank()) {
+        if (properties.getKeyId() == null
+                || properties.getKeyId().isBlank()
+                || properties.getKeySecret() == null
+                || properties.getKeySecret().isBlank()) {
+
             throw new IllegalStateException(
                     "Razorpay credentials are not configured.");
         }
