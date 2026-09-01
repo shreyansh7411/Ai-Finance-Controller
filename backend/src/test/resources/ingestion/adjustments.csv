@@ -1,0 +1,4 @@
+adjustment_id,settlement_id,amount,type,description,created_at
+adj_test_001,set_test_001,10.00,CREDIT,Settlement adjustment,2026-08-04T10:00:00Z
+adj_test_002,set_test_002,5.00,DEBIT,Fee adjustment,2026-08-04T11:00:00Z
+adj_test_003,set_test_003,2.50,CREDIT,Manual adjustment,2026-08-04T12:00:00Z

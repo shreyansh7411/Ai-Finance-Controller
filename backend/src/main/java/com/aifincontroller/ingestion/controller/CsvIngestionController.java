@@ -18,11 +18,10 @@ public class CsvIngestionController {
 
     @PostMapping("/payments")
     public ResponseEntity<IngestionResult> payments(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam String batchId) {
+            @RequestParam("file") MultipartFile file) {
 
         return ResponseEntity.ok(
-                ingestionService.ingestPayments(file, batchId));
+                ingestionService.ingestPayments(file));
     }
 
     @PostMapping("/settlements")

@@ -4,6 +4,7 @@ import com.aifincontroller.domain.Adjustment;
 import com.aifincontroller.domain.Payment;
 import com.aifincontroller.domain.Refund;
 import com.aifincontroller.domain.Settlement;
+import com.aifincontroller.ingestion.domain.IngestionBatch;
 import com.aifincontroller.ingestion.dto.IngestionError;
 import com.aifincontroller.ingestion.dto.IngestionResult;
 import com.aifincontroller.ingestion.validation.CsvRowValidator;
@@ -32,52 +33,47 @@ public class CsvIngestionService {
     private final RefundRepository refundRepository;
     private final AdjustmentRepository adjustmentRepository;
     private final CsvRowValidator csvRowValidator;
+    private final IngestionBatchService ingestionBatchService;
 
     public CsvIngestionService(
             PaymentRepository paymentRepository,
             SettlementRepository settlementRepository,
             RefundRepository refundRepository,
             AdjustmentRepository adjustmentRepository,
-            CsvRowValidator csvRowValidator) {
+            CsvRowValidator csvRowValidator,
+            IngestionBatchService ingestionBatchService) {
 
         this.paymentRepository = paymentRepository;
         this.settlementRepository = settlementRepository;
         this.refundRepository = refundRepository;
         this.adjustmentRepository = adjustmentRepository;
         this.csvRowValidator = csvRowValidator;
+        this.ingestionBatchService = ingestionBatchService;
     }
 
-    public IngestionResult ingestPayments(
-            MultipartFile file,
-            String batchId) {
-
-        return ingest(file, "PAYMENT", batchId);
+    public IngestionResult ingestPayments(MultipartFile file) {
+        return ingest(file, "PAYMENT");
     }
 
-    public IngestionResult ingestSettlements(
-            MultipartFile file) {
-
-        return ingest(file, "SETTLEMENT", null);
+    public IngestionResult ingestSettlements(MultipartFile file) {
+        return ingest(file, "SETTLEMENT");
     }
 
-    public IngestionResult ingestRefunds(
-            MultipartFile file) {
-
-        return ingest(file, "REFUND", null);
+    public IngestionResult ingestRefunds(MultipartFile file) {
+        return ingest(file, "REFUND");
     }
 
-    public IngestionResult ingestAdjustments(
-            MultipartFile file) {
-
-        return ingest(file, "ADJUSTMENT", null);
+    public IngestionResult ingestAdjustments(MultipartFile file) {
+        return ingest(file, "ADJUSTMENT");
     }
 
     private IngestionResult ingest(
             MultipartFile file,
-            String entityType,
-            String batchId) {
+            String entityType) {
 
-        List<CSVRecord> records = parse(file);
+        IngestionBatch batch = ingestionBatchService.createBatch(
+                entityType,
+                file.getOriginalFilename());
 
         long importedRows = 0;
         long skippedRows = 0;
@@ -85,49 +81,77 @@ public class CsvIngestionService {
 
         List<IngestionError> errors = new ArrayList<>();
 
-        for (CSVRecord record : records) {
+        try {
+            List<CSVRecord> records = parse(file);
 
-            List<IngestionError> rowErrors =
-                    csvRowValidator.validate(entityType, record);
+            for (CSVRecord record : records) {
 
-            if (!rowErrors.isEmpty()) {
-                failedRows++;
-                errors.addAll(rowErrors);
-                continue;
-            }
+                List<IngestionError> rowErrors =
+                        csvRowValidator.validate(entityType, record);
 
-            try {
-                boolean imported = save(
-                        entityType,
-                        record,
-                        batchId);
-
-                if (imported) {
-                    importedRows++;
-                } else {
-                    skippedRows++;
+                if (!rowErrors.isEmpty()) {
+                    failedRows++;
+                    errors.addAll(rowErrors);
+                    continue;
                 }
 
-            } catch (Exception e) {
-                failedRows++;
+                try {
+                    boolean imported = save(
+                            entityType,
+                            record,
+                            batch.getBatchId());
 
-                errors.add(new IngestionError(
-                        record.getRecordNumber(),
-                        null,
-                        "Unable to persist row: " + e.getMessage()
-                ));
+                    if (imported) {
+                        importedRows++;
+                    } else {
+                        skippedRows++;
+                    }
+
+                } catch (Exception e) {
+                    failedRows++;
+
+                    errors.add(new IngestionError(
+                            record.getRecordNumber(),
+                            null,
+                            "Unable to persist row: " + e.getMessage()
+                    ));
+                }
             }
-        }
 
-        return new IngestionResult(
-                batchId,
-                entityType,
-                records.size(),
-                importedRows,
-                skippedRows,
-                failedRows,
-                errors
-        );
+            IngestionBatch completedBatch =
+                    ingestionBatchService.completeBatch(
+                            batch,
+                            records.size(),
+                            importedRows,
+                            skippedRows,
+                            failedRows);
+
+            return new IngestionResult(
+                    completedBatch.getBatchId(),
+                    completedBatch.getEntityType(),
+                    completedBatch.getTotalRows(),
+                    completedBatch.getImportedRows(),
+                    completedBatch.getSkippedRows(),
+                    completedBatch.getFailedRows(),
+                    errors
+            );
+
+        } catch (Exception e) {
+
+            IngestionBatch failedBatch =
+                    ingestionBatchService.failBatch(
+                            batch,
+                            0,
+                            importedRows,
+                            skippedRows,
+                            failedRows);
+
+            throw new IllegalArgumentException(
+                    "Ingestion failed for batch "
+                            + failedBatch.getBatchId()
+                            + ": " + e.getMessage(),
+                    e);
+        }
     }
 
     private boolean save(

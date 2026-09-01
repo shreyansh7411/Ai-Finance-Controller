@@ -1,0 +1,4 @@
+refund_id,payment_id,amount,status,created_at
+ref_test_001,pay_test_001,50.00,PROCESSED,2026-08-03T10:00:00Z
+ref_test_002,pay_test_002,100.00,PROCESSED,2026-08-03T11:00:00Z
+ref_test_003,pay_test_003,75.25,PENDING,2026-08-03T12:00:00Z

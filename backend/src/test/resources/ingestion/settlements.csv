@@ -1,0 +1,4 @@
+settlement_id,payment_id,amount,fees,tax,status,utr,settled_at
+set_test_001,pay_test_001,100.50,2.00,0.36,SETTLED,UTR_TEST_001,2026-08-02T10:00:00Z
+set_test_002,pay_test_002,250.00,5.00,0.90,SETTLED,UTR_TEST_002,2026-08-02T11:00:00Z
+set_test_003,pay_test_003,75.25,1.50,0.27,PENDING,, 

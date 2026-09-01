@@ -6,25 +6,18 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
-@Table(
-        name = "settlements",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_settlements_settlement_payment",
-                columnNames = {"settlement_id", "payment_id"}
-        )
-)
+@Table(name = "settlements")
 public class Settlement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "settlement_id", nullable = false, length = 100)
+    @Column(name = "settlement_id", unique = true, nullable = false, length = 100)
     private String settlementId;
 
     @Column(name = "payment_id", length = 100)

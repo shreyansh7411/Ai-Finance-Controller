@@ -1,0 +1,4 @@
+payment_id,order_id,amount,currency,status,created_at,captured_at
+pay_test_001,order_test_001,100.50,INR,CAPTURED,2026-08-01T10:00:00Z,2026-08-01T10:01:00Z
+pay_test_002,order_test_002,250.00,INR,CAPTURED,2026-08-01T11:00:00Z,2026-08-01T11:01:00Z
+pay_test_003,order_test_003,75.25,INR,FAILED,2026-08-01T12:00:00Z,
