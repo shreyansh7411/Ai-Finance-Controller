@@ -24,14 +24,35 @@ public class ReconciliationException {
     @Column(nullable = false, length = 100)
     private String type;
 
+    @Column(nullable = false, length = 100)
+    private String category;
+
     @Column(nullable = false, length = 50)
     private String severity;
 
     @Column(nullable = false, length = 50)
     private String status;
 
+    @Column(name = "expected_amount", precision = 19, scale = 4)
+    private BigDecimal expectedAmount;
+
+    @Column(name = "actual_amount", precision = 19, scale = 4)
+    private BigDecimal actualAmount;
+
+    @Column(precision = 19, scale = 4)
+    private BigDecimal difference;
+
+    @Column(name = "source_reference", length = 255)
+    private String sourceReference;
+
+    @Column(name = "candidate_record", length = 255)
+    private String candidateRecord;
+
     @Column(name = "evidence_summary", columnDefinition = "TEXT")
     private String evidenceSummary;
+
+    @Column(columnDefinition = "TEXT")
+    private String evidence;
 
     @Column(name = "ai_confidence", precision = 5, scale = 4)
     private BigDecimal aiConfidence;
@@ -76,6 +97,14 @@ public class ReconciliationException {
         this.type = type;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     public String getSeverity() {
         return severity;
     }
@@ -92,12 +121,60 @@ public class ReconciliationException {
         this.status = status;
     }
 
+    public BigDecimal getExpectedAmount() {
+        return expectedAmount;
+    }
+
+    public void setExpectedAmount(BigDecimal expectedAmount) {
+        this.expectedAmount = expectedAmount;
+    }
+
+    public BigDecimal getActualAmount() {
+        return actualAmount;
+    }
+
+    public void setActualAmount(BigDecimal actualAmount) {
+        this.actualAmount = actualAmount;
+    }
+
+    public BigDecimal getDifference() {
+        return difference;
+    }
+
+    public void setDifference(BigDecimal difference) {
+        this.difference = difference;
+    }
+
+    public String getSourceReference() {
+        return sourceReference;
+    }
+
+    public void setSourceReference(String sourceReference) {
+        this.sourceReference = sourceReference;
+    }
+
+    public String getCandidateRecord() {
+        return candidateRecord;
+    }
+
+    public void setCandidateRecord(String candidateRecord) {
+        this.candidateRecord = candidateRecord;
+    }
+
     public String getEvidenceSummary() {
         return evidenceSummary;
     }
 
     public void setEvidenceSummary(String evidenceSummary) {
         this.evidenceSummary = evidenceSummary;
+    }
+
+    public String getEvidence() {
+        return evidence;
+    }
+
+    public void setEvidence(String evidence) {
+        this.evidence = evidence;
     }
 
     public BigDecimal getAiConfidence() {

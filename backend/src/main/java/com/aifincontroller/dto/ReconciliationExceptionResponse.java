@@ -8,6 +8,8 @@ public class ReconciliationExceptionResponse {
     private String batchId;
     private String paymentReference;
     private String matchType;
+    private String category;
+    private String severity;
     private String status;
     private BigDecimal expectedAmount;
     private BigDecimal actualAmount;
@@ -19,6 +21,8 @@ public class ReconciliationExceptionResponse {
             String batchId,
             String paymentReference,
             String matchType,
+            String category,
+            String severity,
             String status,
             BigDecimal expectedAmount,
             BigDecimal actualAmount,
@@ -29,6 +33,8 @@ public class ReconciliationExceptionResponse {
         this.batchId = batchId;
         this.paymentReference = paymentReference;
         this.matchType = matchType;
+        this.category = category;
+        this.severity = severity;
         this.status = status;
         this.expectedAmount = expectedAmount;
         this.actualAmount = actualAmount;
@@ -50,6 +56,14 @@ public class ReconciliationExceptionResponse {
 
     public String getMatchType() {
         return matchType;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getSeverity() {
+        return severity;
     }
 
     public String getStatus() {

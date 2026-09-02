@@ -3,6 +3,7 @@ package com.aifincontroller.service;
 import com.aifincontroller.domain.AuditLog;
 import com.aifincontroller.domain.ReconciliationException;
 import com.aifincontroller.dto.ExceptionResolutionRequest;
+import com.aifincontroller.dto.ExceptionStatusUpdateRequest;
 import com.aifincontroller.repository.AuditLogRepository;
 import com.aifincontroller.repository.ReconciliationExceptionRepository;
 import java.time.Instant;
@@ -28,28 +29,58 @@ public class ExceptionResolutionService {
             Long exceptionId,
             ExceptionResolutionRequest request) {
 
+        ExceptionStatusUpdateRequest statusRequest =
+                new ExceptionStatusUpdateRequest();
+
+        statusRequest.setStatus("RESOLVED");
+        statusRequest.setActor(request.getActor());
+        statusRequest.setDecision(request.getDecision());
+        statusRequest.setResolution(request.getResolution());
+
+        return updateStatus(exceptionId, statusRequest);
+    }
+
+    @Transactional
+    public ReconciliationException updateStatus(
+            Long exceptionId,
+            ExceptionStatusUpdateRequest request) {
+
         ReconciliationException exception =
                 exceptionRepository.findById(exceptionId)
                         .orElseThrow(() ->
                                 new IllegalArgumentException(
                                         "Exception not found: " + exceptionId));
 
-        if ("RESOLVED".equalsIgnoreCase(exception.getStatus())) {
-            return exception;
+        String current = exception.getStatus().toUpperCase();
+        String target = request.getStatus().toUpperCase();
+
+        boolean valid =
+                ("OPEN".equals(current) &&
+                        ("INVESTIGATING".equals(target)
+                                || "RESOLVED".equals(target)
+                                || "IGNORED".equals(target)))
+                || ("INVESTIGATING".equals(current)
+                        && "RESOLVED".equals(target));
+
+        if (!valid) {
+            throw new IllegalStateException(
+                    "Invalid transition: " + current + " -> " + target);
         }
 
-        exception.setStatus("RESOLVED");
-        exception.setResolution(request.getResolution());
-        exception.setResolvedAt(Instant.now());
+        exception.setStatus(target);
+
+        if ("RESOLVED".equals(target)) {
+            exception.setResolution(request.getResolution());
+            exception.setResolvedAt(Instant.now());
+        }
 
         ReconciliationException saved =
                 exceptionRepository.save(exception);
 
         AuditLog auditLog = new AuditLog();
-
         auditLog.setEntityType("RECONCILIATION_EXCEPTION");
         auditLog.setEntityId(String.valueOf(exceptionId));
-        auditLog.setAction("RESOLVE_EXCEPTION");
+        auditLog.setAction("STATUS_CHANGE");
         auditLog.setActor(
                 request.getActor() == null ||
                 request.getActor().isBlank()

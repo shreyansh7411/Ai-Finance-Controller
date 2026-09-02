@@ -3,6 +3,7 @@ package com.aifincontroller.controller;
 import com.aifincontroller.domain.AuditLog;
 import com.aifincontroller.domain.ReconciliationException;
 import com.aifincontroller.dto.ExceptionResolutionRequest;
+import com.aifincontroller.dto.ExceptionStatusUpdateRequest;
 import com.aifincontroller.repository.AuditLogRepository;
 import com.aifincontroller.repository.ReconciliationExceptionRepository;
 import com.aifincontroller.service.ExceptionResolutionService;
@@ -46,6 +47,16 @@ public class ExceptionController {
                 resolutionService.resolveException(id, request)
         );
     }
+
+    @PutMapping("/{id}/status")
+public ResponseEntity<ReconciliationException> updateStatus(
+        @PathVariable Long id,
+        @RequestBody ExceptionStatusUpdateRequest request) {
+
+    return ResponseEntity.ok(
+            resolutionService.updateStatus(id, request)
+    );
+}
 
     @GetMapping("/{id}/audit")
     public ResponseEntity<List<AuditLog>> getAuditHistory(

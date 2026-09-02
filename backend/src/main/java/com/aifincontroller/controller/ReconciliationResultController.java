@@ -1,9 +1,10 @@
 package com.aifincontroller.controller;
 
-import com.aifincontroller.dto.ReconciliationExceptionResponse;
-import java.math.BigDecimal;
+import com.aifincontroller.domain.ReconciliationException;
 import com.aifincontroller.domain.ReconciliationResult;
+import com.aifincontroller.dto.ReconciliationExceptionResponse;
 import com.aifincontroller.dto.ReconciliationSummaryResponse;
+import com.aifincontroller.repository.ReconciliationExceptionRepository;
 import com.aifincontroller.repository.ReconciliationResultRepository;
 import java.util.List;
 import java.util.Map;
@@ -17,12 +18,14 @@ import org.springframework.web.bind.annotation.*;
 public class ReconciliationResultController {
 
     private final ReconciliationResultRepository reconciliationResultRepository;
+    private final ReconciliationExceptionRepository exceptionRepository;
 
     public ReconciliationResultController(
-            ReconciliationResultRepository reconciliationResultRepository) {
+            ReconciliationResultRepository reconciliationResultRepository,
+            ReconciliationExceptionRepository exceptionRepository) {
 
-        this.reconciliationResultRepository =
-                reconciliationResultRepository;
+        this.reconciliationResultRepository = reconciliationResultRepository;
+        this.exceptionRepository = exceptionRepository;
     }
 
     @GetMapping("/results")
@@ -35,38 +38,61 @@ public class ReconciliationResultController {
     }
 
     @GetMapping("/exceptions")
-public ResponseEntity<List<ReconciliationExceptionResponse>> getExceptions(
-        @RequestParam String batchId,
-        @RequestParam(required = false) String matchType,
-        @RequestParam(required = false) String status) {
+    public ResponseEntity<List<ReconciliationExceptionResponse>> getExceptions(
+            @RequestParam(required = false) String batchId,
+            @RequestParam(required = false) String matchType,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String severity) {
 
-    List<ReconciliationResult> results =
-            reconciliationResultRepository.findByBatchId(batchId);
+        List<ReconciliationResult> results =
+                batchId == null
+                        ? reconciliationResultRepository.findAll()
+                        : reconciliationResultRepository.findByBatchId(batchId);
 
-    List<ReconciliationExceptionResponse> exceptions =
-            results.stream()
-                    .filter(result -> "EXCEPTION".equals(result.getStatus()))
-                    .filter(result ->
-                            matchType == null ||
-                            matchType.equalsIgnoreCase(result.getMatchType()))
-                    .filter(result ->
-                            status == null ||
-                            status.equalsIgnoreCase(result.getStatus()))
-                    .map(result -> new ReconciliationExceptionResponse(
-                            result.getId(),
-                            result.getBatchId(),
-                            result.getPaymentReference(),
-                            result.getMatchType(),
-                            result.getStatus(),
-                            result.getExpectedAmount(),
-                            result.getActualAmount(),
-                            result.getDifference(),
-                            result.getConfidenceScore()
-                    ))
-                    .toList();
+        List<ReconciliationExceptionResponse> exceptions =
+                results.stream()
+                        .filter(result ->
+                                "EXCEPTION".equalsIgnoreCase(result.getStatus()))
+                        .filter(result ->
+                                matchType == null ||
+                                matchType.equalsIgnoreCase(result.getMatchType()))
+                        .map(result ->
+                                exceptionRepository
+                                        .findByReconciliationResultId(result.getId())
+                                        .stream()
+                                        .findFirst()
+                                        .map(exception ->
+                                                new ReconciliationExceptionResponse(
+                                                        exception.getId(),
+                                                        result.getBatchId(),
+                                                        result.getPaymentReference(),
+                                                        result.getMatchType(),
+                                                        exception.getCategory(),
+                                                        exception.getSeverity(),
+                                                        exception.getStatus(),
+                                                        result.getExpectedAmount(),
+                                                        result.getActualAmount(),
+                                                        result.getDifference(),
+                                                        result.getConfidenceScore()
+                                                )
+                                        )
+                                        .orElse(null)
+                        )
+                        .filter(java.util.Objects::nonNull)
+                        .filter(exception ->
+                                status == null ||
+                                status.equalsIgnoreCase(exception.getStatus()))
+                        .filter(exception ->
+                                category == null ||
+                                category.equalsIgnoreCase(exception.getCategory()))
+                        .filter(exception ->
+                                severity == null ||
+                                severity.equalsIgnoreCase(exception.getSeverity()))
+                        .toList();
 
-    return ResponseEntity.ok(exceptions);
-}
+        return ResponseEntity.ok(exceptions);
+    }
 
     @GetMapping("/summary")
     public ResponseEntity<ReconciliationSummaryResponse> getSummary(
