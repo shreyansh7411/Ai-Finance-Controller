@@ -1,6 +1,7 @@
 package com.aifincontroller;
 
 import com.aifincontroller.config.AiProperties;
+import com.aifincontroller.config.DecisionProperties;
 import com.aifincontroller.config.RazorpayProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,7 +10,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @SpringBootApplication
 @EnableConfigurationProperties({
         AiProperties.class,
-        RazorpayProperties.class
+        RazorpayProperties.class,
+        DecisionProperties.class
 })
 public class AiFinControllerApplication {
 
