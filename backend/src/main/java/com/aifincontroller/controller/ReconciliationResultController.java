@@ -50,34 +50,58 @@ public class ReconciliationResultController {
                         ? reconciliationResultRepository.findAll()
                         : reconciliationResultRepository.findByBatchId(batchId);
 
-        List<ReconciliationExceptionResponse> exceptions =
+        List<ReconciliationResult> exceptionResults =
                 results.stream()
                         .filter(result ->
                                 "EXCEPTION".equalsIgnoreCase(result.getStatus()))
                         .filter(result ->
                                 matchType == null ||
                                 matchType.equalsIgnoreCase(result.getMatchType()))
+                        .toList();
+
+        List<Long> resultIds =
+                exceptionResults.stream()
+                        .map(ReconciliationResult::getId)
+                        .toList();
+
+        Map<Long, ReconciliationException> exceptionsByResultId =
+                resultIds.isEmpty()
+                        ? Map.of()
+                        : exceptionRepository
+                                .findByReconciliationResultIdIn(resultIds)
+                                .stream()
+                                .collect(Collectors.toMap(
+                                        ReconciliationException::getReconciliationResultId,
+                                        Function.identity(),
+                                        (first, second) -> first
+                                ));
+
+        List<ReconciliationExceptionResponse> exceptions =
+                exceptionResults.stream()
                         .map(result ->
-                                exceptionRepository
-                                        .findByReconciliationResultId(result.getId())
-                                        .stream()
-                                        .findFirst()
-                                        .map(exception ->
-                                                new ReconciliationExceptionResponse(
-                                                        exception.getId(),
-                                                        result.getBatchId(),
-                                                        result.getPaymentReference(),
-                                                        result.getMatchType(),
-                                                        exception.getCategory(),
-                                                        exception.getSeverity(),
-                                                        exception.getStatus(),
-                                                        result.getExpectedAmount(),
-                                                        result.getActualAmount(),
-                                                        result.getDifference(),
-                                                        result.getConfidenceScore()
-                                                )
+                                exceptionsByResultId.get(result.getId()) == null
+                                        ? null
+                                        : new ReconciliationExceptionResponse(
+                                                exceptionsByResultId
+                                                        .get(result.getId())
+                                                        .getId(),
+                                                result.getBatchId(),
+                                                result.getPaymentReference(),
+                                                result.getMatchType(),
+                                                exceptionsByResultId
+                                                        .get(result.getId())
+                                                        .getCategory(),
+                                                exceptionsByResultId
+                                                        .get(result.getId())
+                                                        .getSeverity(),
+                                                exceptionsByResultId
+                                                        .get(result.getId())
+                                                        .getStatus(),
+                                                result.getExpectedAmount(),
+                                                result.getActualAmount(),
+                                                result.getDifference(),
+                                                result.getConfidenceScore()
                                         )
-                                        .orElse(null)
                         )
                         .filter(java.util.Objects::nonNull)
                         .filter(exception ->

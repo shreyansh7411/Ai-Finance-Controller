@@ -7,13 +7,17 @@ import com.aifincontroller.domain.ReconciliationException;
 import com.aifincontroller.repository.AuditLogRepository;
 import com.aifincontroller.repository.DecisionRecordRepository;
 import com.aifincontroller.repository.ReconciliationExceptionRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 class DecisionServiceTest {
@@ -36,7 +40,8 @@ class DecisionServiceTest {
                 decisionRepository,
                 exceptionRepository,
                 auditLogRepository,
-                decisionEngine
+                decisionEngine,
+                new ObjectMapper()
         );
     }
 
@@ -138,7 +143,7 @@ class DecisionServiceTest {
         );
 
         decision.setConfidence(
-                new java.math.BigDecimal("0.95")
+                new BigDecimal("0.95")
         );
 
         decision.setReason(
@@ -151,10 +156,20 @@ class DecisionServiceTest {
         when(decisionRepository.save(any(DecisionRecord.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
+        AiInvestigationResponse investigation =
+                new AiInvestigationResponse();
+
+        investigation.setEvidenceReferences(
+                List.of(
+                        "payment:PAY-1001",
+                        "settlement:SET-2001"
+                )
+        );
+
         DecisionRecord result =
                 decisionService.processDecision(
                         exceptionId,
-                        new AiInvestigationResponse()
+                        investigation
                 );
 
         assertEquals(
@@ -165,6 +180,11 @@ class DecisionServiceTest {
         assertEquals(
                 DecisionOutcome.AUTO_RESOLVE.name(),
                 result.getStatus()
+        );
+
+        assertEquals(
+                "[\"payment:PAY-1001\",\"settlement:SET-2001\"]",
+                result.getEvidenceReferences()
         );
 
         assertEquals(
@@ -191,7 +211,9 @@ class DecisionServiceTest {
                                 + decision.getReason())
                                 .equals(audit.getDecision())
                                 && ("exception:"
-                                + exceptionId)
+                                + exceptionId
+                                + ";investigation:"
+                                + result.getEvidenceReferences())
                                 .equals(audit.getEvidenceReference())
                 ));
     }
@@ -220,7 +242,7 @@ class DecisionServiceTest {
         );
 
         decision.setConfidence(
-                new java.math.BigDecimal("0.40")
+                new BigDecimal("0.40")
         );
 
         decision.setReason(

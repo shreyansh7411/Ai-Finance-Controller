@@ -17,25 +17,25 @@ public class AuditLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "entity_type", nullable = false, length = 100)
+    @Column(name = "entity_type", nullable = false, length = 100, updatable = false)
     private String entityType;
 
-    @Column(name = "entity_id", nullable = false, length = 100)
+    @Column(name = "entity_id", nullable = false, length = 100, updatable = false)
     private String entityId;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 100, updatable = false)
     private String action;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 100, updatable = false)
     private String actor;
 
-    @Column(name = "evidence_reference", columnDefinition = "TEXT")
+    @Column(name = "evidence_reference", columnDefinition = "TEXT", updatable = false)
     private String evidenceReference;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", updatable = false)
     private String decision;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
     @PrePersist

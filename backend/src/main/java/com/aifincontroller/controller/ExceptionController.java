@@ -78,8 +78,7 @@ public class ExceptionController {
             @PathVariable Long id) {
 
         return ResponseEntity.ok(
-                auditLogRepository.findByEntityTypeAndEntityId(
-                        "RECONCILIATION_EXCEPTION",
+                auditLogRepository.findExceptionAuditHistory(
                         String.valueOf(id)
                 )
         );

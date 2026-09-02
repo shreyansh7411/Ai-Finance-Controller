@@ -1,6 +1,7 @@
 package com.aifincontroller.ingestion.repository;
 
 import com.aifincontroller.ingestion.domain.IngestionBatch;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -10,4 +11,6 @@ public interface IngestionBatchRepository
     Optional<IngestionBatch> findByBatchId(String batchId);
 
     boolean existsByBatchId(String batchId);
+
+    List<IngestionBatch> findAllByOrderByStartedAtDesc();
 }

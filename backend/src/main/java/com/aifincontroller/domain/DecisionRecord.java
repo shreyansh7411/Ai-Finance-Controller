@@ -34,6 +34,9 @@ public class DecisionRecord {
     @Column(nullable = false, length = 50)
     private String status;
 
+    @Column(name = "evidence_references", columnDefinition = "TEXT")
+    private String evidenceReferences;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -90,6 +93,14 @@ public class DecisionRecord {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getEvidenceReferences() {
+        return evidenceReferences;
+    }
+
+    public void setEvidenceReferences(String evidenceReferences) {
+        this.evidenceReferences = evidenceReferences;
     }
 
     public Instant getCreatedAt() {

@@ -41,7 +41,7 @@ public class IngestionBatchService {
 
     @Transactional(readOnly = true)
     public List<IngestionBatch> getAllBatches() {
-        return batchRepository.findAll();
+        return batchRepository.findAllByOrderByStartedAtDesc();
     }
 
     @Transactional(readOnly = true)

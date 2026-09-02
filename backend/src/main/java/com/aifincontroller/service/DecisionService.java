@@ -7,6 +7,8 @@ import com.aifincontroller.domain.ReconciliationException;
 import com.aifincontroller.repository.AuditLogRepository;
 import com.aifincontroller.repository.DecisionRecordRepository;
 import com.aifincontroller.repository.ReconciliationExceptionRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,17 +21,20 @@ public class DecisionService {
     private final ReconciliationExceptionRepository exceptionRepository;
     private final AuditLogRepository auditLogRepository;
     private final DecisionEngine decisionEngine;
+    private final ObjectMapper objectMapper;
 
     public DecisionService(
             DecisionRecordRepository decisionRepository,
             ReconciliationExceptionRepository exceptionRepository,
             AuditLogRepository auditLogRepository,
-            DecisionEngine decisionEngine) {
+            DecisionEngine decisionEngine,
+            ObjectMapper objectMapper) {
 
         this.decisionRepository = decisionRepository;
         this.exceptionRepository = exceptionRepository;
         this.auditLogRepository = auditLogRepository;
         this.decisionEngine = decisionEngine;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -81,6 +86,19 @@ public class DecisionService {
                 decision.getOutcome().name()
         );
 
+        try {
+            record.setEvidenceReferences(
+                    objectMapper.writeValueAsString(
+                            investigation.getEvidenceReferences()
+                    )
+            );
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(
+                    "Unable to serialize decision evidence",
+                    e
+            );
+        }
+
         DecisionRecord saved =
                 decisionRepository.save(record);
 
@@ -126,6 +144,8 @@ public class DecisionService {
         auditLog.setEvidenceReference(
                 "exception:"
                         + exceptionId
+                        + ";investigation:"
+                        + record.getEvidenceReferences()
         );
 
         auditLogRepository.save(auditLog);

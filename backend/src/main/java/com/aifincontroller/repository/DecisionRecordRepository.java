@@ -11,4 +11,6 @@ public interface DecisionRecordRepository
         extends JpaRepository<DecisionRecord, Long> {
 
     Optional<DecisionRecord> findByExceptionId(Long exceptionId);
+
+    long countByOutcome(String outcome);
 }

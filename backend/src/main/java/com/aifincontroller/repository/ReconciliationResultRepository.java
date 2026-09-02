@@ -11,4 +11,6 @@ public interface ReconciliationResultRepository extends JpaRepository<Reconcilia
     List<ReconciliationResult> findByBatchId(String batchId);
 
     List<ReconciliationResult> findByPaymentReference(String paymentReference);
+
+    long countByStatus(String status);
 }

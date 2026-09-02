@@ -79,9 +79,9 @@ public class AiInvestigationEvidenceService {
         request.setCategory(exception.getCategory());
         request.setSeverity(exception.getSeverity());
         request.setPaymentReference(result.getPaymentReference());
-        request.setExpectedAmount(exception.getExpectedAmount());
-        request.setActualAmount(exception.getActualAmount());
-        request.setDifference(exception.getDifference());
+        request.setExpectedAmount(result.getExpectedAmount());
+        request.setActualAmount(result.getActualAmount());
+        request.setDifference(result.getDifference());
         request.setEvidenceSummary(exception.getEvidenceSummary());
 
         List<String> evidenceIds = new ArrayList<>();

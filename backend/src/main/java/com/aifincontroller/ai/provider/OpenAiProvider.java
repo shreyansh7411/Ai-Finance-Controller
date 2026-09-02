@@ -6,6 +6,7 @@ import com.aifincontroller.config.AiProperties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -14,6 +15,7 @@ import reactor.core.publisher.Mono;
 import java.time.Duration;
 
 @Component
+@ConditionalOnProperty(name = "ai.provider", havingValue = "openai")
 public class OpenAiProvider implements AiProvider {
 
     private static final int MAX_ATTEMPTS = 3;
@@ -241,3 +243,4 @@ public class OpenAiProvider implements AiProvider {
     ) {
     }
 }
+

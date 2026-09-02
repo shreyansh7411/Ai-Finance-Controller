@@ -179,25 +179,15 @@ class FinancialEntityPersistenceTest {
 
         ReconciliationException exception = new ReconciliationException();
         exception.setReconciliationResultId(result.getId());
-
         exception.setType("NONE");
-        exception.setCategory("UNKNOWN_DISCREPANCY");
+        exception.setCategory("NONE");
         exception.setSeverity("INFO");
         exception.setStatus("CLOSED");
-
-        exception.setExpectedAmount(new BigDecimal("100.0000"));
-        exception.setActualAmount(new BigDecimal("100.0000"));
-        exception.setDifference(new BigDecimal("0.0000"));
-
-        exception.setSourceReference("payment:test-payment");
-        exception.setCandidateRecord("settlement:test-settlement");
-        exception.setEvidence("Payment and settlement amounts match exactly.");
         exception.setEvidenceSummary("Exact match");
-
         exception.setAiConfidence(new BigDecimal("0.9900"));
         exception.setCreatedAt(now);
-
         exceptionRepository.saveAndFlush(exception);
+
         AuditLog auditLog = new AuditLog();
         auditLog.setEntityType("PAYMENT");
         auditLog.setEntityId(paymentId);
@@ -225,7 +215,7 @@ class FinancialEntityPersistenceTest {
 
         assertThat(resultRepository.findByBatchId("batch_" + suffix)).hasSize(1);
         assertThat(exceptionRepository.findByReconciliationResultId(result.getId())).hasSize(1);
-        assertThat(auditLogRepository.findByEntityTypeAndEntityId("PAYMENT", paymentId))
+        assertThat(auditLogRepository.findByEntityTypeAndEntityIdOrderByCreatedAtAsc("PAYMENT", paymentId))
                 .hasSize(1);
     }
 
