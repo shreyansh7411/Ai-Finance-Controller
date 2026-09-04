@@ -25,6 +25,22 @@ export async function investigateException(exceptionId) {
   return response.json()
 }
 
+export async function getExceptionInvestigation(exceptionId) {
+  const response = await fetch(
+    `/api/v1/reconciliation/exceptions/${encodeURIComponent(exceptionId)}/investigation`
+  )
+
+  if (response.status === 404) {
+    return null
+  }
+
+  if (!response.ok) {
+    throw new Error(`Failed to load investigation: ${response.status}`)
+  }
+
+  return response.json()
+}
+
 export async function getExceptionDecision(exceptionId) {
   const response = await fetch(
     `/api/v1/reconciliation/exceptions/${encodeURIComponent(exceptionId)}/decision`

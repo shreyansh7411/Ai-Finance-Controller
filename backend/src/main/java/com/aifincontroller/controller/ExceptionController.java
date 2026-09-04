@@ -93,6 +93,15 @@ public class ExceptionController {
         );
     }
 
+    @GetMapping("/{id}/investigation")
+    public ResponseEntity<AiInvestigationResponse> getInvestigation(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                aiInvestigationService.getInvestigation(id)
+        );
+    }
+
     @PostMapping("/{id}/decide")
     public ResponseEntity<DecisionRecord> decideException(
             @PathVariable Long id,

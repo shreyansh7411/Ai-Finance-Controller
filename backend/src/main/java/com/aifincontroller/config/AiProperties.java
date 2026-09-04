@@ -2,12 +2,12 @@ package com.aifincontroller.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "openai")
+@ConfigurationProperties(prefix = "gemini")
 public class AiProperties {
 
-    private String baseUrl = "https://api.openai.com/v1";
+    private String baseUrl = "https://generativelanguage.googleapis.com";
     private String apiKey;
-    private String model = "gpt-4o-mini";
+    private String model = "v1beta/models/gemini-2.0-flash";
     private boolean enabled = false;
 
     public String getBaseUrl() {

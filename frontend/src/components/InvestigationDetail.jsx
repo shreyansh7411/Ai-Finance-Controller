@@ -3,6 +3,7 @@ import {
   getException,
   investigateException,
   getExceptionDecision,
+  getExceptionInvestigation,
   getExceptionAudit,
   updateExceptionStatus,
 } from '../api/investigationApi.js'
@@ -64,18 +65,21 @@ export default function InvestigationDetail({
 
       try {
         const [
-          exceptionData,
-          decisionData,
-          auditData,
-        ] = await Promise.all([
-          getException(exceptionId),
-          getExceptionDecision(exceptionId),
-          getExceptionAudit(exceptionId),
-        ])
+  exceptionData,
+  investigationData,
+  decisionData,
+  auditData,
+] = await Promise.all([
+  getException(exceptionId),
+  getExceptionInvestigation(exceptionId),
+  getExceptionDecision(exceptionId),
+  getExceptionAudit(exceptionId),
+])
 
         if (cancelled) return
 
         setException(exceptionData)
+        setInvestigation(investigationData)
         setDecision(decisionData)
         setAuditHistory(auditData || [])
       } catch (err) {

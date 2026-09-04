@@ -42,3 +42,7 @@ PROJECT_CODEBASE_SNAPSHOT.md
 PHASE_3_PLAN.md
 PHASE_04_EXCEPTION_ENGINE.md
 PHASE_05_AI_INVESTIGATOR_PLAN.md
+payments.csv
+settlements.csv
+refunds.csv
+adjustments.csv

@@ -16,6 +16,7 @@ import com.aifincontroller.ingestion.service.CsvIngestionService;
 import com.aifincontroller.ingestion.service.IngestionBatchService;
 import com.aifincontroller.ingestion.validation.CsvRowValidator;
 import com.aifincontroller.repository.AdjustmentRepository;
+import com.aifincontroller.repository.MerchantOrderRepository;
 import com.aifincontroller.repository.PaymentRepository;
 import com.aifincontroller.repository.RefundRepository;
 import com.aifincontroller.repository.SettlementRepository;
@@ -34,6 +35,9 @@ class CsvIngestionServiceTest {
 
         @Mock
         private PaymentRepository paymentRepository;
+
+        @Mock
+        private MerchantOrderRepository merchantOrderRepository;
 
         @Mock
         private SettlementRepository settlementRepository;
@@ -56,6 +60,7 @@ class CsvIngestionServiceTest {
         void setUp() {
                 service = new CsvIngestionService(
                                 paymentRepository,
+                                merchantOrderRepository,
                                 settlementRepository,
                                 refundRepository,
                                 adjustmentRepository,
@@ -507,14 +512,14 @@ class CsvIngestionServiceTest {
                 verify(paymentRepository, never()).save(any(Payment.class));
         }
 
-    private MockMultipartFile csv(
-            String filename,
-            String content) {
+        private MockMultipartFile csv(
+                        String filename,
+                        String content) {
 
-        return new MockMultipartFile(
-                "file",
-                filename,
-                "text/csv",
-                content.getBytes(StandardCharsets.UTF_8));
-    }
+                return new MockMultipartFile(
+                                "file",
+                                filename,
+                                "text/csv",
+                                content.getBytes(StandardCharsets.UTF_8));
+        }
 }

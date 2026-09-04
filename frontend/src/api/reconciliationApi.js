@@ -12,6 +12,20 @@ export async function getReconciliationResults(batchId) {
   return response.json()
 }
 
+export async function runReconciliation(batchId) {
+  const response = await fetch(
+    `/api/v1/reconciliation/run?batchId=${encodeURIComponent(batchId)}`,
+    { method: 'POST' }
+  )
+
+  if (!response.ok) {
+    const message = await response.text()
+    throw new Error(message || `Failed to run reconciliation: ${response.status}`)
+  }
+
+  return response.json()
+}
+
 export async function getReconciliationExceptions(filters = {}) {
   const params = new URLSearchParams()
 

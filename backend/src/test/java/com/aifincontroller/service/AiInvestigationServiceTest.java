@@ -1,7 +1,9 @@
 package com.aifincontroller.service;
 
+import com.aifincontroller.ai.domain.AiInvestigationRecord;
 import com.aifincontroller.ai.dto.AiInvestigationResponse;
 import com.aifincontroller.ai.provider.AiProvider;
+import com.aifincontroller.ai.repository.AiInvestigationRecordRepository;
 import com.aifincontroller.domain.Payment;
 import com.aifincontroller.domain.ReconciliationException;
 import com.aifincontroller.domain.ReconciliationResult;
@@ -12,6 +14,7 @@ import com.aifincontroller.repository.ReconciliationExceptionRepository;
 import com.aifincontroller.repository.ReconciliationResultRepository;
 import com.aifincontroller.repository.RefundRepository;
 import com.aifincontroller.repository.SettlementRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -22,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AiInvestigationServiceTest {
@@ -49,6 +53,11 @@ class AiInvestigationServiceTest {
 
         AdjustmentRepository adjustmentRepository =
                 mock(AdjustmentRepository.class);
+
+        AiInvestigationRecordRepository investigationRepository =
+                mock(AiInvestigationRecordRepository.class);
+
+        ObjectMapper objectMapper = new ObjectMapper();
 
         ReconciliationException exception =
                 new ReconciliationException();
@@ -84,6 +93,9 @@ class AiInvestigationServiceTest {
         );
         payment.setCurrency("INR");
         payment.setStatus("CAPTURED");
+
+        when(investigationRepository.findByExceptionId(1L))
+                .thenReturn(Optional.empty());
 
         when(exceptionRepository.findById(1L))
                 .thenReturn(Optional.of(exception));
@@ -168,7 +180,9 @@ class AiInvestigationServiceTest {
         AiInvestigationService service =
                 new AiInvestigationService(
                         evidenceService,
-                        aiProvider
+                        aiProvider,
+                        investigationRepository,
+                        objectMapper
                 );
 
         AiInvestigationResponse actual =
@@ -178,6 +192,10 @@ class AiInvestigationServiceTest {
                 expectedResponse,
                 actual
         );
+
+        verify(investigationRepository).save(
+                org.mockito.ArgumentMatchers.any(AiInvestigationRecord.class)
+        );
     }
 
     @Test
@@ -186,7 +204,9 @@ class AiInvestigationServiceTest {
         AiInvestigationService service =
                 new AiInvestigationService(
                         mock(AiInvestigationEvidenceService.class),
-                        mock(AiProvider.class)
+                        mock(AiProvider.class),
+                        mock(AiInvestigationRecordRepository.class),
+                        new ObjectMapper()
                 );
 
         IllegalArgumentException exception =

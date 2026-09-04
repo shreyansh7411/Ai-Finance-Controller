@@ -1,8 +1,13 @@
 package com.aifincontroller.service;
 
-import com.aifincontroller.ai.dto.AiInvestigationRequest;
 import com.aifincontroller.ai.dto.AiInvestigationResponse;
 import com.aifincontroller.ai.provider.AiProvider;
+import com.aifincontroller.domain.Payment;
+import com.aifincontroller.domain.ReconciliationException;
+import com.aifincontroller.domain.ReconciliationResult;
+import com.aifincontroller.repository.PaymentRepository;
+import com.aifincontroller.repository.ReconciliationExceptionRepository;
+import com.aifincontroller.repository.ReconciliationResultRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,11 +16,13 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @Transactional
@@ -26,7 +33,13 @@ import static org.mockito.Mockito.*;
 class AiInvestigationEndToEndTest {
 
     @Autowired
-    private AiInvestigationEvidenceService evidenceService;
+    private PaymentRepository paymentRepository;
+
+    @Autowired
+    private ReconciliationResultRepository resultRepository;
+
+    @Autowired
+    private ReconciliationExceptionRepository exceptionRepository;
 
     @Autowired
     private AiInvestigationService investigationService;
@@ -37,24 +50,46 @@ class AiInvestigationEndToEndTest {
     @Test
     void shouldCompleteInvestigationFlow() {
 
-        Long exceptionId = 1679L;
+        Payment payment = new Payment();
+        payment.setPaymentId("pay_test");
+        payment.setBatchId("batch_test");
+        payment.setOrderId("order_test");
+        payment.setAmount(new BigDecimal("100.0000"));
+        payment.setCurrency("INR");
+        payment.setStatus("captured");
 
-        AiInvestigationRequest request =
-                new AiInvestigationRequest();
+        payment = paymentRepository.save(payment);
 
-        request.setExceptionId(exceptionId);
-        request.setExceptionType("FEE_DIFFERENCE");
-        request.setCategory("AMOUNT_MISMATCH");
-        request.setSeverity("MEDIUM");
-        request.setPaymentReference("pay_test");
-        request.setExpectedAmount(
-                new BigDecimal("100.0000"));
-        request.setActualAmount(
-                new BigDecimal("97.6400"));
-        request.setDifference(
-                new BigDecimal("2.3600"));
-        request.setEvidenceSummary(
+        ReconciliationResult result = new ReconciliationResult();
+        result.setBatchId("batch_test");
+        result.setPaymentReference(payment.getPaymentId());
+        result.setMatchedRecord("settlement_test");
+        result.setMatchType("FEE_DIFFERENCE");
+        result.setExpectedAmount(new BigDecimal("100.0000"));
+        result.setActualAmount(new BigDecimal("97.6400"));
+        result.setDifference(new BigDecimal("2.3600"));
+        result.setStatus("EXCEPTION");
+        result.setConfidenceScore(new BigDecimal("0.90"));
+
+        result = resultRepository.save(result);
+
+        ReconciliationException exception =
+                new ReconciliationException();
+
+        exception.setReconciliationResultId(result.getId());
+        exception.setType("FEE_DIFFERENCE");
+        exception.setCategory("AMOUNT_MISMATCH");
+        exception.setSeverity("MEDIUM");
+        exception.setStatus("OPEN");
+        exception.setExpectedAmount(new BigDecimal("100.0000"));
+        exception.setActualAmount(new BigDecimal("97.6400"));
+        exception.setDifference(new BigDecimal("2.3600"));
+        exception.setSourceReference("pay_test");
+        exception.setCandidateRecord("settlement_test");
+        exception.setEvidenceSummary(
                 "Settlement amount differs due to fees and tax.");
+
+        exception = exceptionRepository.save(exception);
 
         AiInvestigationResponse response =
                 new AiInvestigationResponse();
@@ -67,7 +102,7 @@ class AiInvestigationEndToEndTest {
                         + "amount is reduced by 2 INR fees and 0.36 INR tax.");
 
         response.setEvidenceReferences(
-                List.of(
+                java.util.List.of(
                         "payment.amount",
                         "settlement.fees",
                         "settlement.tax"
@@ -79,36 +114,36 @@ class AiInvestigationEndToEndTest {
         response.setRecommendedStatus(
                 "INVESTIGATING");
 
-        when(aiProvider.investigate(any(AiInvestigationRequest.class)))
+        when(aiProvider.investigate(any()))
                 .thenReturn(response);
 
-        AiInvestigationResponse result =
-                investigationService.investigate(exceptionId);
+        AiInvestigationResponse investigationResult =
+                investigationService.investigate(exception.getId());
 
-        assertThat(result).isNotNull();
+        assertThat(investigationResult).isNotNull();
 
-        assertThat(result.getConclusion())
+        assertThat(investigationResult.getConclusion())
                 .isEqualTo(
                         "The discrepancy is explained by settlement fees and tax.");
 
-        assertThat(result.getExplanation())
+        assertThat(investigationResult.getExplanation())
                 .contains("2 INR fees");
 
-        assertThat(result.getEvidenceReferences())
+        assertThat(investigationResult.getEvidenceReferences())
                 .containsExactly(
                         "payment.amount",
                         "settlement.fees",
                         "settlement.tax"
                 );
 
-        assertThat(result.getConfidence())
+        assertThat(investigationResult.getConfidence())
                 .isEqualByComparingTo("0.92");
 
-        assertThat(result.getRecommendedStatus())
+        assertThat(investigationResult.getRecommendedStatus())
                 .isEqualTo("INVESTIGATING");
 
         verify(aiProvider, times(1))
-                .investigate(any(AiInvestigationRequest.class));
+                .investigate(any());
 
         verifyNoMoreInteractions(aiProvider);
     }

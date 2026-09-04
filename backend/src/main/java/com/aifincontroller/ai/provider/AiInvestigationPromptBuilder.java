@@ -44,10 +44,20 @@ public class AiInvestigationPromptBuilder {
                     5. Never create, alter, abbreviate, or guess an evidence ID.
 
                     6. If the supplied evidence is insufficient to determine
-                       the cause of the exception, explicitly state that the
-                       evidence is insufficient.
+   the cause of the exception, use recommendedStatus
+   INSUFFICIENT_EVIDENCE.
 
-                    7. Confidence must be a number between 0 and 1.
+   When recommendedStatus is INSUFFICIENT_EVIDENCE:
+   - The conclusion MUST explicitly state that the evidence
+     is insufficient.
+   - The explanation MUST explicitly state that the evidence
+     is insufficient.
+   - Explain what information is missing, conflicting, or
+     ambiguous.
+   - Do not claim that a root cause has been established.
+   - Do not recommend RESOLVED.
+
+7. Confidence must be a number between 0 and 1.
 
                     8. recommendedStatus must be exactly one of:
                        INVESTIGATING,
@@ -76,19 +86,35 @@ public class AiInvestigationPromptBuilder {
 
                     IMPORTANT:
 
-                    The evidenceReferences array must contain only IDs that
-                    appear exactly in the backend-supplied evidenceIds list.
+The evidenceReferences array must contain only IDs that
+appear exactly in the backend-supplied evidenceIds list.
 
-                    Examples of valid evidence IDs include:
-                    PAYMENT_AMOUNT
-                    PAYMENT_ORDER_ID
-                    SETTLEMENT_AMOUNT
-                    SETTLEMENT_FEES
-                    SETTLEMENT_TAX
-                    REFUND_AMOUNT
-                    ADJUSTMENT_AMOUNT
+Examples of valid evidence IDs include:
+PAYMENT_AMOUNT
+PAYMENT_ORDER_ID
+SETTLEMENT_AMOUNT
+SETTLEMENT_FEES
+SETTLEMENT_TAX
+REFUND_AMOUNT
+ADJUSTMENT_AMOUNT
 
-                    BACKEND-SUPPLIED INVESTIGATION EVIDENCE:
+If recommending INSUFFICIENT_EVIDENCE, the response must
+explicitly state in both the conclusion and explanation
+that the evidence is insufficient. It must explain what
+information is missing, conflicting, or ambiguous and must
+not claim that the root cause has been established.
+
+Example:
+
+{
+  "conclusion": "The available evidence is insufficient to determine the cause of this exception.",
+  "explanation": "The available evidence is insufficient because the records do not provide enough information to distinguish between the possible causes.",
+  "evidenceReferences": ["EXACT_STABLE_EVIDENCE_ID"],
+  "confidence": 0.4,
+  "recommendedStatus": "INSUFFICIENT_EVIDENCE"
+}
+
+BACKEND-SUPPLIED INVESTIGATION EVIDENCE:
 
                     %s
                     """.formatted(evidenceJson);

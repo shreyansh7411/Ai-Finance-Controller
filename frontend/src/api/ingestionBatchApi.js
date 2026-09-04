@@ -23,3 +23,23 @@ export async function getIngestionBatch(batchId) {
 
   return response.json()
 }
+
+export async function uploadCsv(file, entityType) {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(
+    `/api/v1/ingestion/${entityType.toLowerCase()}s`,
+    {
+      method: 'POST',
+      body: formData,
+    }
+  )
+
+  if (!response.ok) {
+    const message = await response.text()
+    throw new Error(message || `Upload failed: ${response.status}`)
+  }
+
+  return response.json()
+}

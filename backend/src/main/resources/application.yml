@@ -49,9 +49,11 @@ razorpay:
   key-id: ${RAZORPAY_KEY_ID:}
   key-secret: ${RAZORPAY_KEY_SECRET:}
 
+ai:
+  provider: ${AI_PROVIDER:gemini}
 
-openai:
-  enabled: ${OPENAI_ENABLED:false}
-  base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
-  api-key: ${OPENAI_API_KEY:}
-  model: ${OPENAI_MODEL:}
+gemini:
+  enabled: ${GEMINI_ENABLED:true}
+  base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
+  api-key: ${GEMINI_API_KEY:}
+  model: ${GEMINI_MODEL:v1beta/models/gemini-3.6-flash}

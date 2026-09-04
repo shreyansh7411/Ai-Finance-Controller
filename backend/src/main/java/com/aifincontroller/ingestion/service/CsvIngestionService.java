@@ -1,6 +1,7 @@
 package com.aifincontroller.ingestion.service;
 
 import com.aifincontroller.domain.Adjustment;
+import com.aifincontroller.domain.MerchantOrder;
 import com.aifincontroller.domain.Payment;
 import com.aifincontroller.domain.Refund;
 import com.aifincontroller.domain.Settlement;
@@ -9,6 +10,7 @@ import com.aifincontroller.ingestion.dto.IngestionError;
 import com.aifincontroller.ingestion.dto.IngestionResult;
 import com.aifincontroller.ingestion.validation.CsvRowValidator;
 import com.aifincontroller.repository.AdjustmentRepository;
+import com.aifincontroller.repository.MerchantOrderRepository;
 import com.aifincontroller.repository.PaymentRepository;
 import com.aifincontroller.repository.RefundRepository;
 import com.aifincontroller.repository.SettlementRepository;
@@ -29,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class CsvIngestionService {
 
     private final PaymentRepository paymentRepository;
+    private final MerchantOrderRepository merchantOrderRepository;
     private final SettlementRepository settlementRepository;
     private final RefundRepository refundRepository;
     private final AdjustmentRepository adjustmentRepository;
@@ -37,6 +40,7 @@ public class CsvIngestionService {
 
     public CsvIngestionService(
             PaymentRepository paymentRepository,
+            MerchantOrderRepository merchantOrderRepository,
             SettlementRepository settlementRepository,
             RefundRepository refundRepository,
             AdjustmentRepository adjustmentRepository,
@@ -44,6 +48,7 @@ public class CsvIngestionService {
             IngestionBatchService ingestionBatchService) {
 
         this.paymentRepository = paymentRepository;
+        this.merchantOrderRepository = merchantOrderRepository;
         this.settlementRepository = settlementRepository;
         this.refundRepository = refundRepository;
         this.adjustmentRepository = adjustmentRepository;
@@ -179,10 +184,23 @@ public class CsvIngestionService {
             return false;
         }
 
+        String orderId = value(record, "order_id");
+
+        if (!merchantOrderRepository.existsByOrderId(orderId)) {
+            MerchantOrder order = new MerchantOrder();
+            order.setOrderId(orderId);
+            order.setAmount(decimal(record, "amount"));
+            order.setCurrency(value(record, "currency"));
+            order.setStatus("paid");
+            order.setCreatedAt(instant(record, "created_at"));
+
+            merchantOrderRepository.save(order);
+        }
+
         Payment payment = new Payment();
         payment.setPaymentId(paymentId);
         payment.setBatchId(batchId);
-        payment.setOrderId(value(record, "order_id"));
+        payment.setOrderId(orderId);
         payment.setAmount(decimal(record, "amount"));
         payment.setCurrency(value(record, "currency"));
         payment.setStatus(value(record, "status"));
