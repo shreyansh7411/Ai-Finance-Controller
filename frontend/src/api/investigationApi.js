@@ -25,6 +25,28 @@ export async function investigateException(exceptionId) {
   return response.json()
 }
 
+export async function decideException(exceptionId, investigation) {
+  const response = await fetch(
+    `/api/v1/reconciliation/exceptions/${encodeURIComponent(exceptionId)}/decide`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(investigation),
+    }
+  )
+
+  if (!response.ok) {
+    const message = await response.text()
+    throw new Error(
+      message || `Failed to process decision: ${response.status}`
+    )
+  }
+
+  return response.json()
+}
+
 export async function getExceptionInvestigation(exceptionId) {
   const response = await fetch(
     `/api/v1/reconciliation/exceptions/${encodeURIComponent(exceptionId)}/investigation`
@@ -69,7 +91,13 @@ export async function getExceptionAudit(exceptionId) {
   return response.json()
 }
 
-export async function updateExceptionStatus(exceptionId, status, actor = 'MERCHANT_UI', decision = '', resolution = '') {
+export async function updateExceptionStatus(
+  exceptionId,
+  status,
+  actor = 'MERCHANT_UI',
+  decision = '',
+  resolution = ''
+) {
   const response = await fetch(
     `/api/v1/reconciliation/exceptions/${encodeURIComponent(exceptionId)}/status`,
     {
@@ -88,7 +116,9 @@ export async function updateExceptionStatus(exceptionId, status, actor = 'MERCHA
 
   if (!response.ok) {
     const message = await response.text()
-    throw new Error(message || `Failed to update exception status: ${response.status}`)
+    throw new Error(
+      message || `Failed to update exception status: ${response.status}`
+    )
   }
 
   return response.json()

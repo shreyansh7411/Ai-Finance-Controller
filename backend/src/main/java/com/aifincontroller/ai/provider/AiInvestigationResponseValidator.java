@@ -34,19 +34,56 @@ public class AiInvestigationResponseValidator {
             );
         }
 
-        if (response.getConclusion() == null ||
-                response.getConclusion().isBlank()) {
+        requireText(
+                response.getConclusion(),
+                "AI investigation conclusion is missing"
+        );
 
+        requireText(
+                response.getExplanation(),
+                "AI investigation explanation is missing"
+        );
+
+        requireText(
+                response.getWhatHappened(),
+                "AI investigation whatHappened is missing"
+        );
+
+        requireText(
+                response.getRootCause(),
+                "AI investigation rootCause is missing"
+        );
+
+        requireText(
+                response.getFinancialImpact(),
+                "AI investigation financialImpact is missing"
+        );
+
+        requireText(
+                response.getConfidenceReasoning(),
+                "AI investigation confidenceReasoning is missing"
+        );
+
+        requireText(
+                response.getRecommendedAction(),
+                "AI investigation recommendedAction is missing"
+        );
+
+        if (response.getSupportingEvidence() == null) {
             throw new AiProviderException(
-                    "AI investigation conclusion is missing"
+                    "AI investigation supportingEvidence is missing"
             );
         }
 
-        if (response.getExplanation() == null ||
-                response.getExplanation().isBlank()) {
-
+        if (response.getAlternativeExplanations() == null) {
             throw new AiProviderException(
-                    "AI investigation explanation is missing"
+                    "AI investigation alternativeExplanations is missing"
+            );
+        }
+
+        if (response.getMissingEvidence() == null) {
+            throw new AiProviderException(
+                    "AI investigation missingEvidence is missing"
             );
         }
 
@@ -59,6 +96,7 @@ public class AiInvestigationResponseValidator {
         }
 
         confidenceValidator.validate(response);
+
         recommendationValidator.validate(response);
 
         evidenceReferenceValidator.validate(
@@ -70,5 +108,14 @@ public class AiInvestigationResponseValidator {
                 request,
                 response
         );
+    }
+
+    private void requireText(
+            String value,
+            String message) {
+
+        if (value == null || value.isBlank()) {
+            throw new AiProviderException(message);
+        }
     }
 }

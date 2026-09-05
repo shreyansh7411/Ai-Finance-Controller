@@ -9,6 +9,7 @@ public class AiProperties {
     private String apiKey;
     private String model = "v1beta/models/gemini-2.0-flash";
     private boolean enabled = false;
+    private long timeoutSeconds = 45;
 
     public String getBaseUrl() {
         return baseUrl;
@@ -40,5 +41,13 @@ public class AiProperties {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public long getTimeoutSeconds() {
+        return timeoutSeconds;
+    }
+
+    public void setTimeoutSeconds(long timeoutSeconds) {
+        this.timeoutSeconds = timeoutSeconds;
     }
 }

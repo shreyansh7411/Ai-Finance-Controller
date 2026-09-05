@@ -31,6 +31,7 @@ public class AiInvestigationEvidenceService {
     private final SettlementRepository settlementRepository;
     private final RefundRepository refundRepository;
     private final AdjustmentRepository adjustmentRepository;
+    private final FinancialAnalysisService financialAnalysisService;
 
     public AiInvestigationEvidenceService(
             ReconciliationExceptionRepository exceptionRepository,
@@ -39,7 +40,8 @@ public class AiInvestigationEvidenceService {
             MerchantOrderRepository orderRepository,
             SettlementRepository settlementRepository,
             RefundRepository refundRepository,
-            AdjustmentRepository adjustmentRepository) {
+            AdjustmentRepository adjustmentRepository,
+            FinancialAnalysisService financialAnalysisService) {
 
         this.exceptionRepository = exceptionRepository;
         this.resultRepository = resultRepository;
@@ -48,6 +50,7 @@ public class AiInvestigationEvidenceService {
         this.settlementRepository = settlementRepository;
         this.refundRepository = refundRepository;
         this.adjustmentRepository = adjustmentRepository;
+        this.financialAnalysisService = financialAnalysisService;
     }
 
     @Transactional(readOnly = true)
@@ -73,6 +76,8 @@ public class AiInvestigationEvidenceService {
                         .orElse(null);
 
         AiInvestigationRequest request = new AiInvestigationRequest();
+        request.setFinancialAnalysis(
+                financialAnalysisService.analyze(exceptionId));
 
         request.setExceptionId(exception.getId());
         request.setExceptionType(exception.getType());

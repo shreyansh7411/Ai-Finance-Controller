@@ -22,6 +22,7 @@ public class AiInvestigationRequest {
     private PaymentEvidence payment;
     private OrderEvidence order;
     private SettlementEvidence settlement;
+    private FinancialAnalysis financialAnalysis;
 
     private List<RefundEvidence> refunds;
     private List<AdjustmentEvidence> adjustments;
@@ -29,6 +30,14 @@ public class AiInvestigationRequest {
     private String evidenceSummary;
 
     private List<String> evidenceIds;
+
+    public FinancialAnalysis getFinancialAnalysis() {
+        return financialAnalysis;
+    }
+
+    public void setFinancialAnalysis(FinancialAnalysis financialAnalysis) {
+        this.financialAnalysis = financialAnalysis;
+    }
 
     public Long getExceptionId() {
         return exceptionId;

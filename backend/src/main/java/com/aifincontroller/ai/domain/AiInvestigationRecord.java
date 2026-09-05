@@ -28,6 +28,30 @@ public class AiInvestigationRecord {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String explanation;
 
+    @Column(name = "what_happened", columnDefinition = "TEXT")
+    private String whatHappened;
+
+    @Column(name = "root_cause", columnDefinition = "TEXT")
+    private String rootCause;
+
+    @Column(name = "financial_impact", columnDefinition = "TEXT")
+    private String financialImpact;
+
+    @Column(name = "supporting_evidence", columnDefinition = "TEXT")
+    private String supportingEvidence;
+
+    @Column(name = "alternative_explanations", columnDefinition = "TEXT")
+    private String alternativeExplanations;
+
+    @Column(name = "missing_evidence", columnDefinition = "TEXT")
+    private String missingEvidence;
+
+    @Column(name = "confidence_reasoning", columnDefinition = "TEXT")
+    private String confidenceReasoning;
+
+    @Column(name = "recommended_action", columnDefinition = "TEXT")
+    private String recommendedAction;
+
     @Column(name = "evidence_references", columnDefinition = "TEXT")
     private String evidenceReferences;
 
@@ -77,6 +101,70 @@ public class AiInvestigationRecord {
 
     public void setExplanation(String explanation) {
         this.explanation = explanation;
+    }
+
+    public String getWhatHappened() {
+        return whatHappened;
+    }
+
+    public void setWhatHappened(String whatHappened) {
+        this.whatHappened = whatHappened;
+    }
+
+    public String getRootCause() {
+        return rootCause;
+    }
+
+    public void setRootCause(String rootCause) {
+        this.rootCause = rootCause;
+    }
+
+    public String getFinancialImpact() {
+        return financialImpact;
+    }
+
+    public void setFinancialImpact(String financialImpact) {
+        this.financialImpact = financialImpact;
+    }
+
+    public String getSupportingEvidence() {
+        return supportingEvidence;
+    }
+
+    public void setSupportingEvidence(String supportingEvidence) {
+        this.supportingEvidence = supportingEvidence;
+    }
+
+    public String getAlternativeExplanations() {
+        return alternativeExplanations;
+    }
+
+    public void setAlternativeExplanations(String alternativeExplanations) {
+        this.alternativeExplanations = alternativeExplanations;
+    }
+
+    public String getMissingEvidence() {
+        return missingEvidence;
+    }
+
+    public void setMissingEvidence(String missingEvidence) {
+        this.missingEvidence = missingEvidence;
+    }
+
+    public String getConfidenceReasoning() {
+        return confidenceReasoning;
+    }
+
+    public void setConfidenceReasoning(String confidenceReasoning) {
+        this.confidenceReasoning = confidenceReasoning;
+    }
+
+    public String getRecommendedAction() {
+        return recommendedAction;
+    }
+
+    public void setRecommendedAction(String recommendedAction) {
+        this.recommendedAction = recommendedAction;
     }
 
     public String getEvidenceReferences() {

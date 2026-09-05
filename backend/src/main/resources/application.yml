@@ -57,3 +57,4 @@ gemini:
   base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com}
   api-key: ${GEMINI_API_KEY:}
   model: ${GEMINI_MODEL:v1beta/models/gemini-3.6-flash}
+  timeout-seconds: ${GEMINI_TIMEOUT_SECONDS:90}

@@ -3,7 +3,6 @@ package com.aifincontroller.service;
 import com.aifincontroller.ai.domain.AiInvestigationRecord;
 import com.aifincontroller.ai.dto.AiInvestigationRequest;
 import com.aifincontroller.ai.dto.AiInvestigationResponse;
-import com.aifincontroller.controller.ResourceNotFoundException;
 import com.aifincontroller.ai.provider.AiProvider;
 import com.aifincontroller.ai.repository.AiInvestigationRecordRepository;
 import com.aifincontroller.controller.ResourceNotFoundException;
@@ -46,7 +45,7 @@ public class AiInvestigationService {
         /*
          * Investigation is persisted per exception.
          * If one already exists, return the stored result rather than
-         * making another Gemini call.
+         * making another AI provider call.
          */
         AiInvestigationRecord existing =
                 investigationRepository.findByExceptionId(exceptionId)
@@ -66,22 +65,54 @@ public class AiInvestigationService {
                 new AiInvestigationRecord();
 
         record.setExceptionId(exceptionId);
-        record.setConclusion(response.getConclusion());
-        record.setExplanation(response.getExplanation());
-        record.setConfidence(response.getConfidence());
+
+        record.setConclusion(
+                response.getConclusion());
+
+        record.setExplanation(
+                response.getExplanation());
+
+        record.setWhatHappened(
+                response.getWhatHappened());
+
+        record.setRootCause(
+                response.getRootCause());
+
+        record.setFinancialImpact(
+                response.getFinancialImpact());
+
+        record.setConfidenceReasoning(
+                response.getConfidenceReasoning());
+
+        record.setRecommendedAction(
+                response.getRecommendedAction());
+
+        record.setConfidence(
+                response.getConfidence());
+
         record.setRecommendedStatus(
-                response.getRecommendedStatus()
-        );
+                response.getRecommendedStatus());
 
         try {
             record.setEvidenceReferences(
-                    objectMapper.writeValueAsString(
-                            response.getEvidenceReferences()
-                    )
-            );
+                    serialize(
+                            response.getEvidenceReferences()));
+
+            record.setSupportingEvidence(
+                    serialize(
+                            response.getSupportingEvidence()));
+
+            record.setAlternativeExplanations(
+                    serialize(
+                            response.getAlternativeExplanations()));
+
+            record.setMissingEvidence(
+                    serialize(
+                            response.getMissingEvidence()));
+
         } catch (JsonProcessingException exception) {
             throw new IllegalStateException(
-                    "Unable to serialize investigation evidence",
+                    "Unable to serialize investigation details",
                     exception
             );
         }
@@ -92,7 +123,8 @@ public class AiInvestigationService {
     }
 
     @Transactional(readOnly = true)
-    public AiInvestigationResponse getInvestigation(Long exceptionId) {
+    public AiInvestigationResponse getInvestigation(
+            Long exceptionId) {
 
         if (exceptionId == null) {
             throw new IllegalArgumentException(
@@ -103,11 +135,11 @@ public class AiInvestigationService {
         AiInvestigationRecord record =
                 investigationRepository.findByExceptionId(exceptionId)
                         .orElseThrow(() ->
-        new ResourceNotFoundException(
-                "Investigation not found for exception: "
-                        + exceptionId
-        )
-);
+                                new ResourceNotFoundException(
+                                        "Investigation not found for exception: "
+                                                + exceptionId
+                                )
+                        );
 
         return toResponse(record);
     }
@@ -118,35 +150,86 @@ public class AiInvestigationService {
         AiInvestigationResponse response =
                 new AiInvestigationResponse();
 
-        response.setConclusion(record.getConclusion());
-        response.setExplanation(record.getExplanation());
-        response.setConfidence(record.getConfidence());
+        response.setConclusion(
+                record.getConclusion());
+
+        response.setExplanation(
+                record.getExplanation());
+
+        response.setWhatHappened(
+                record.getWhatHappened());
+
+        response.setRootCause(
+                record.getRootCause());
+
+        response.setFinancialImpact(
+                record.getFinancialImpact());
+
+        response.setConfidenceReasoning(
+                record.getConfidenceReasoning());
+
+        response.setRecommendedAction(
+                record.getRecommendedAction());
+
+        response.setConfidence(
+                record.getConfidence());
+
         response.setRecommendedStatus(
-                record.getRecommendedStatus()
-        );
+                record.getRecommendedStatus());
 
         try {
-            List<String> evidenceReferences =
-                    record.getEvidenceReferences() == null
-                            ? List.of()
-                            : objectMapper.readValue(
-                                    record.getEvidenceReferences(),
-                                    objectMapper.getTypeFactory()
-                                            .constructCollectionType(
-                                                    List.class,
-                                                    String.class
-                                            )
-                            );
+            response.setEvidenceReferences(
+                    deserializeList(
+                            record.getEvidenceReferences()));
 
-            response.setEvidenceReferences(evidenceReferences);
+            response.setSupportingEvidence(
+                    deserializeList(
+                            record.getSupportingEvidence()));
+
+            response.setAlternativeExplanations(
+                    deserializeList(
+                            record.getAlternativeExplanations()));
+
+            response.setMissingEvidence(
+                    deserializeList(
+                            record.getMissingEvidence()));
 
         } catch (JsonProcessingException exception) {
             throw new IllegalStateException(
-                    "Unable to deserialize investigation evidence",
+                    "Unable to deserialize investigation details",
                     exception
             );
         }
 
         return response;
+    }
+
+    private String serialize(
+            List<String> values)
+            throws JsonProcessingException {
+
+        return objectMapper.writeValueAsString(
+                values == null
+                        ? List.of()
+                        : values
+        );
+    }
+
+    private List<String> deserializeList(
+            String json)
+            throws JsonProcessingException {
+
+        if (json == null || json.isBlank()) {
+            return List.of();
+        }
+
+        return objectMapper.readValue(
+                json,
+                objectMapper.getTypeFactory()
+                        .constructCollectionType(
+                                List.class,
+                                String.class
+                        )
+        );
     }
 }

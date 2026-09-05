@@ -67,9 +67,11 @@ public class GeminiProvider implements AiProvider {
                 return callGemini(prompt, request);
             } catch (AiProviderException exception) {
                 lastException = exception;
+
                 if (!isRetryable(exception) || attempt == MAX_ATTEMPTS) {
                     throw exception;
                 }
+
                 sleepBeforeRetry(attempt);
             }
         }
@@ -82,6 +84,7 @@ public class GeminiProvider implements AiProvider {
     private AiInvestigationResponse callGemini(
             String prompt,
             AiInvestigationRequest request) {
+
         try {
             String responseBody = webClient.post()
                     .uri(uriBuilder -> uriBuilder
@@ -107,13 +110,15 @@ public class GeminiProvider implements AiProvider {
                                                             + response.statusCode()
                                                             + " - " + body))))
                     .bodyToMono(String.class)
-                    .block(Duration.ofSeconds(60));
+                    .block(Duration.ofSeconds(properties.getTimeoutSeconds()));
 
             if (responseBody == null || responseBody.isBlank()) {
-                throw new AiProviderException("Gemini returned an empty response");
+                throw new AiProviderException(
+                        "Gemini returned an empty response");
             }
 
             JsonNode root = objectMapper.readTree(responseBody);
+
             JsonNode text = root.path("candidates")
                     .path(0)
                     .path("content")
@@ -126,10 +131,16 @@ public class GeminiProvider implements AiProvider {
                         "Gemini response does not contain generated content");
             }
 
+            String normalizedJson = normalizeJsonResponse(text.asText());
+
             AiInvestigationResponse response = objectMapper.readValue(
-                    text.asText(), AiInvestigationResponse.class);
+                    normalizedJson,
+                    AiInvestigationResponse.class);
+
             responseValidator.validate(request, response);
+
             return response;
+
         } catch (AiProviderException exception) {
             throw exception;
         } catch (Exception exception) {
@@ -139,38 +150,80 @@ public class GeminiProvider implements AiProvider {
         }
     }
 
+    private String normalizeJsonResponse(String text) {
+
+        if (text == null) {
+            return null;
+        }
+
+        String normalized = text.trim();
+
+        if (normalized.startsWith("```json")) {
+            normalized = normalized.substring(7).trim();
+        } else if (normalized.startsWith("```")) {
+            normalized = normalized.substring(3).trim();
+        }
+
+        if (normalized.endsWith("```")) {
+            normalized = normalized.substring(
+                    0,
+                    normalized.length() - 3
+            ).trim();
+        }
+
+        return normalized;
+    }
+
     private boolean isRetryable(AiProviderException exception) {
+
         Throwable cause = exception;
+
         while (cause != null) {
+
             if (cause instanceof java.net.ConnectException ||
                     cause instanceof java.net.SocketTimeoutException ||
                     cause instanceof java.io.IOException) {
                 return true;
             }
+
             cause = cause.getCause();
         }
 
         String message = exception.getMessage();
-        return message != null && (message.contains("429") ||
-                message.contains("500") || message.contains("502") ||
-                message.contains("503") || message.contains("504"));
+
+        return message != null &&
+                (message.contains("429") ||
+                        message.contains("500") ||
+                        message.contains("502") ||
+                        message.contains("503") ||
+                        message.contains("504"));
     }
 
     private void sleepBeforeRetry(int attempt) {
+
         try {
             Thread.sleep(RETRY_DELAY_MS * attempt);
+
         } catch (InterruptedException exception) {
+
             Thread.currentThread().interrupt();
-            throw new AiProviderException("Gemini retry interrupted", exception);
+
+            throw new AiProviderException(
+                    "Gemini retry interrupted",
+                    exception);
         }
     }
 
-    private record GeminiRequest(GeminiContent[] contents) {
+    private record GeminiRequest(
+            GeminiContent[] contents) {
     }
 
-    private record GeminiContent(String role, GeminiPart[] parts) {
+    private record GeminiContent(
+            String role,
+            GeminiPart[] parts) {
     }
 
-    private record GeminiPart(String text) {
+    private record GeminiPart(
+            String text) {
     }
 }

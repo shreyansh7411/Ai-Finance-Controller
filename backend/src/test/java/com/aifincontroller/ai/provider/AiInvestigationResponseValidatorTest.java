@@ -49,6 +49,44 @@ class AiInvestigationResponseValidatorTest {
                 "The supplied settlement evidence shows a lower net amount."
         );
 
+        response.setWhatHappened(
+                "The payment was received for the expected amount, but the settlement amount was lower after applicable deductions."
+        );
+
+        response.setRootCause(
+                "The difference is explained by settlement fees and taxes recorded in the supplied settlement evidence."
+        );
+
+        response.setFinancialImpact(
+                "The merchant received a lower net settlement amount than the original payment amount."
+        );
+
+        response.setSupportingEvidence(
+                List.of(
+                        "The payment amount matches the expected payment amount.",
+                        "The settlement amount is lower than the payment amount.",
+                        "Settlement fees and taxes are present in the supplied evidence."
+                )
+        );
+
+        response.setAlternativeExplanations(
+                List.of(
+                        "Additional deductions may exist if further settlement records are available."
+                )
+        );
+
+        response.setMissingEvidence(
+                List.of()
+        );
+
+        response.setConfidenceReasoning(
+                "Confidence is high because the payment and settlement evidence directly supports the identified difference."
+        );
+
+        response.setRecommendedAction(
+                "Review the settlement deductions and confirm that the recorded fees and taxes are expected."
+        );
+
         response.setEvidenceReferences(
                 List.of(
                         "SETTLEMENT_AMOUNT",

@@ -5,12 +5,15 @@
 html,
 body,
 #root {
-	height: 100%;
-	background: #f4f7f8;
+    height: 100%;
+    background: #f4f7f8;
 }
 
 body {
-	margin: 0;
-	overflow: hidden;
-	overscroll-behavior-y: none;
+    margin: 0;
+    overflow: hidden;
+    overscroll-behavior-y: none;
+    font-family: "Segoe UI", "Noto Sans", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }

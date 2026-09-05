@@ -203,6 +203,72 @@ class AiInvestigationEvidenceServiceTest {
         assertThat(request.getDifference())
                 .isEqualByComparingTo("2.3600");
 
+        /*
+         * The AI must receive deterministic financial analysis
+         * in addition to the raw financial records.
+         */
+        assertThat(request.getFinancialAnalysis())
+                .isNotNull();
+
+        assertThat(request.getFinancialAnalysis()
+                .getExpectedAmount())
+                .isEqualByComparingTo("100.0000");
+
+        assertThat(request.getFinancialAnalysis()
+                .getActualAmount())
+                .isEqualByComparingTo("97.6400");
+
+        assertThat(request.getFinancialAnalysis()
+                .getReconciliationDifference())
+                .isEqualByComparingTo("2.3600");
+
+        assertThat(request.getFinancialAnalysis()
+                .getPaymentAmount())
+                .isEqualByComparingTo("100.0000");
+
+        assertThat(request.getFinancialAnalysis()
+                .getSettlementAmount())
+                .isEqualByComparingTo("100.0000");
+
+        assertThat(request.getFinancialAnalysis()
+                .getSettlementFees())
+                .isEqualByComparingTo("2.0000");
+
+        assertThat(request.getFinancialAnalysis()
+                .getSettlementTax())
+                .isEqualByComparingTo("0.3600");
+
+        assertThat(request.getFinancialAnalysis()
+                .getTotalRefundAmount())
+                .isEqualByComparingTo("10.0000");
+
+        assertThat(request.getFinancialAnalysis()
+                .getTotalAdjustmentAmount())
+                .isEqualByComparingTo("-1.5000");
+
+        assertThat(request.getFinancialAnalysis()
+                .isPaymentMatchesExpected());
+
+        assertThat(request.getFinancialAnalysis()
+                .isPaymentMatchesOrder());
+
+        assertThat(request.getFinancialAnalysis()
+                .isSettlementPresent());
+
+        assertThat(request.getFinancialAnalysis()
+                .isRefundPresent());
+
+        assertThat(request.getFinancialAnalysis()
+                .isAdjustmentPresent());
+
+        assertThat(request.getFinancialAnalysis()
+                .getCandidateCauses())
+                .isNotEmpty();
+
+        assertThat(request.getFinancialAnalysis()
+                .getFinancialAssessment())
+                .isNotBlank();
+
         assertThat(request.getPayment())
                 .isNotNull();
 
@@ -242,5 +308,22 @@ class AiInvestigationEvidenceServiceTest {
         assertThat(request.getEvidenceSummary())
                 .isEqualTo(
                         "Settlement amount differs due to fees and tax.");
+
+        assertThat(request.getEvidenceIds())
+                .contains(
+                        "EXCEPTION_EXPECTED_AMOUNT",
+                        "EXCEPTION_ACTUAL_AMOUNT",
+                        "EXCEPTION_DIFFERENCE",
+                        "PAYMENT_ID",
+                        "PAYMENT_ORDER_ID",
+                        "PAYMENT_AMOUNT",
+                        "SETTLEMENT_ID",
+                        "SETTLEMENT_AMOUNT",
+                        "SETTLEMENT_FEES",
+                        "SETTLEMENT_TAX",
+                        "REFUND_ID",
+                        "REFUND_AMOUNT",
+                        "ADJUSTMENT_ID",
+                        "ADJUSTMENT_AMOUNT");
     }
 }
