@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+﻿import { Fragment, useEffect, useState } from 'react'
 import { getIngestionBatches, uploadCsv } from './api/ingestionBatchApi.js'
 import InvestigationDetail from './components/InvestigationDetail.jsx'
 import { getDashboardMetrics } from './api/dashboardApi.js'
@@ -1254,12 +1254,12 @@ function IntroPage({ onStart }) {
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-300 text-sm font-black text-[#071a1d]">
-              L
+              Q
             </div>
 
             <div>
               <p className="text-sm font-semibold tracking-tight">
-                Ledgerline
+                Quaestor
               </p>
 
               <p className="text-[10px] uppercase tracking-[0.16em] text-slate-500">
@@ -1770,12 +1770,12 @@ export default function App() {
           <div className="px-5 py-6">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-300 text-sm font-black text-[#091b1e]">
-                L
+                Q
               </div>
 
               <div>
                 <p className="text-sm font-semibold tracking-tight">
-                  Ledgerline
+                  Quaestor
                 </p>
 
                 <p className="text-[9px] uppercase tracking-[0.16em] text-slate-500">
