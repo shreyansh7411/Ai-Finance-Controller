@@ -46,3 +46,4 @@ payments.csv
 settlements.csv
 refunds.csv
 adjustments.csv
+db_test.sql
